@@ -24,11 +24,22 @@ Cada etapa copia todo lo anterior y agrega su bloque. Formato exacto en `contrac
 
 ## Probar el panel (cualquier máquina con Docker)
 ```bash
-cp .env.example .env        # cambia POSTGRES_PASSWORD
+cp .env.example .env                  # cambia POSTGRES_PASSWORD
+./deploy/crear_usuario.sh operador1   # usuario del login; pide la contraseña dos veces
 docker compose up -d --build
-# abrir http://localhost  (con WEB_PORT=80)
+# abrir http://localhost  (con WEB_PORT=80) y entrar con ese usuario
 ```
 Por defecto muestra `demo_data/` (sintético). Para ver resultados reales: `HOST_DATA_DIR=./data` en `.env`.
+
+El login (nginx, `auth_basic`) protege todo: el panel, `/data/` y `/api/`. Los usuarios viven en
+`deploy/panel.htpasswd`, que no se sube a git. Para cambiar una contraseña se vuelve a correr
+`crear_usuario.sh` con el mismo usuario y luego `docker compose up -d --force-recreate --no-deps web`.
+Si `docker compose up` corrió antes de crear el archivo, Docker deja una carpeta con ese nombre:
+bórrala con `sudo rmdir deploy/panel.htpasswd` y crea el usuario.
+
+El panel muestra una placa a la vez: el recorte del original y el de la imagen mejorada lado a lado,
+con los píxeles reales visibles, la lectura de cada uno, dónde está la placa en el fotograma y el
+resumen de la corrida. Las flechas del teclado pasan de una placa a otra.
 
 ## Correr los módulos (desde la raíz del repo; `pip install -r contracts/requirements.txt opencv-python-headless`)
 ```bash
