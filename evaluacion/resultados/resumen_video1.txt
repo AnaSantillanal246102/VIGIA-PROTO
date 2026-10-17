@@ -1,0 +1,28 @@
+Fotos analizadas: 48
+Fotos con al menos una detección: 42
+Detecciones totales: 131
+Confianza >= 0.5: 75
+Forma de placa (proporción 2 a 6): 124
+Con texto leído (original): 12
+Con texto leído (mejorado): 13
+La mejora ayudó en: 10
+Tiempo mejora (promedio ms): 21.3
+Tiempo detección (promedio ms): 28.2
+Tiempo lectura (promedio ms): 677.0
+
+Primeras 15 detecciones:
+{'foto': '000000.json', 'confianza': 0.6342, 'ancho': 139, 'alto': 45, 'proporcion': 3.08, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000000.json', 'confianza': 0.6097, 'ancho': 102, 'alto': 39, 'proporcion': 2.61, 'texto_original': '54ML0002', 'texto_mejorado': '6MI0002', 'mejoro': False}
+{'foto': '000000.json', 'confianza': 0.3708, 'ancho': 72, 'alto': 34, 'proporcion': 2.12, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000005.json', 'confianza': 0.7123, 'ancho': 134, 'alto': 46, 'proporcion': 2.91, 'texto_original': None, 'texto_mejorado': 'FA7911', 'mejoro': True}
+{'foto': '000005.json', 'confianza': 0.6124, 'ancho': 93, 'alto': 37, 'proporcion': 2.53, 'texto_original': '54ML0002', 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000005.json', 'confianza': 0.4775, 'ancho': 75, 'alto': 32, 'proporcion': 2.36, 'texto_original': '6IS657', 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000010.json', 'confianza': 0.6692, 'ancho': 131, 'alto': 46, 'proporcion': 2.88, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000010.json', 'confianza': 0.5438, 'ancho': 67, 'alto': 28, 'proporcion': 2.37, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000010.json', 'confianza': 0.3036, 'ancho': 88, 'alto': 35, 'proporcion': 2.51, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000015.json', 'confianza': 0.6606, 'ancho': 126, 'alto': 45, 'proporcion': 2.8, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000015.json', 'confianza': 0.4204, 'ancho': 88, 'alto': 34, 'proporcion': 2.56, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000015.json', 'confianza': 0.3576, 'ancho': 64, 'alto': 30, 'proporcion': 2.14, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000020.json', 'confianza': 0.6419, 'ancho': 123, 'alto': 46, 'proporcion': 2.7, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000020.json', 'confianza': 0.5704, 'ancho': 99, 'alto': 37, 'proporcion': 2.71, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000025.json', 'confianza': 0.6325, 'ancho': 118, 'alto': 41, 'proporcion': 2.89, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
