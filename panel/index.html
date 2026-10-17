@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VIGIA - Panel de resultados</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f7;color:#1c1e21}
+  header{background:#12304a;color:#fff;padding:14px 20px}
+  header small{display:block;opacity:.8;margin-top:4px}
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .tiles{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .tile{background:#fff;border-radius:8px;padding:12px 16px;min-width:150px;box-shadow:0 1px 3px #0002}
+  .tile b{font-size:1.6rem;display:block}
+  .card{background:#fff;border-radius:8px;padding:12px;margin-bottom:14px;box-shadow:0 1px 3px #0002}
+  .imgs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .imgs figure{margin:0}.imgs img{width:100%;border-radius:4px;background:#ddd}
+  figcaption{font-size:.8rem;color:#555;margin-top:2px}
+  .ok{color:#0a7a2f;font-weight:600}.no{color:#a33}
+  .warn{background:#fff6d6;border-left:4px solid #e0a800;padding:8px 12px;margin-bottom:14px;font-size:.9rem}
+  @media (max-width:700px){.imgs{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>VIGIA - Mejoramiento inteligente de video para videovigilancia urbana
+  <small>Prototipo. Resultados de demostracion.</small></header>
+<main>
+  <div class="warn">Las imagenes mejoradas son un <b>apoyo al analisis, no evidencia</b>.
+    La evidencia es siempre el video original.</div>
+  <div class="tiles" id="tiles"></div>
+  <div id="frames">Cargando...</div>
+</main>
+<script>
+const el = (tag, props = {}, ...kids) => {
+  const n = Object.assign(document.createElement(tag), props);
+  kids.forEach(k => n.append(k)); return n;
+};
+const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "-";
+
+async function main() {
+  try {
+    const s = await (await fetch("/api/summary")).json();
+    const t = document.getElementById("tiles");
+    [["Fotogramas", s.total_frames],
+     ["Placas detectadas", s.plates_detected],
+     ["Leidas en original", `${s.plates_read_original} (${pct(s.plates_read_original, s.plates_detected)})`],
+     ["Leidas en mejorada", `${s.plates_read_enhanced} (${pct(s.plates_read_enhanced, s.plates_detected)})`],
+    ].forEach(([k, v]) => t.append(el("div", {className: "tile"}, el("b", {textContent: v}), k)));
+  } catch (e) { /* sin resumen todavia */ }
+
+  const box = document.getElementById("frames");
+  const frames = await (await fetch("/api/frames")).json();
+  box.textContent = frames.length ? "" : "Sin fotogramas procesados.";
+  for (const f of frames) {
+    const imgs = el("div", {className: "imgs"},
+      el("figure", {}, el("img", {src: "/" + f.image_path, loading: "lazy"}), el("figcaption", {textContent: "Original"})));
+    if (f.enhancement.enhanced_path)
+      imgs.append(el("figure", {}, el("img", {src: "/" + f.enhancement.enhanced_path, loading: "lazy"}),
+        el("figcaption", {textContent: `Mejorada (${f.enhancement.model}) - apoyo, no evidencia`})));
+    const card = el("div", {className: "card"},
+      el("b", {textContent: `${f.camera_id} - ${f.timestamp_utc}`}), imgs);
+    for (const d of f.analysis.detections) {
+      const p = d.plate || {};
+      card.append(el("p", {},
+        `Placa original: ${p.text_original ?? "no legible"} (${p.confidence_original ?? 0}) | mejorada: ${p.text_enhanced ?? "no legible"} (${p.confidence_enhanced ?? 0}) `,
+        el("span", {className: p.readable_improved ? "ok" : "no", textContent: p.readable_improved ? "mejoro" : "sin mejora"})));
+    }
+    card.append(el("small", {textContent: `frame_id: ${f.frame_id} | sha256: ${f.sha256.slice(0, 12)}...`}));
+    box.append(card);
+  }
+}
+main();
+</script>
+</body>
+</html>

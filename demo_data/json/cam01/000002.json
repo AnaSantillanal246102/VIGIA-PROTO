@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "frame_id": "cam01_20261016T120005Z_000002",
+  "camera_id": "cam_01",
+  "source": {
+    "type": "file",
+    "name": "sintetico_demo"
+  },
+  "timestamp_utc": "2026-10-16T12:00:05Z",
+  "frame_index": 2,
+  "width": 640,
+  "height": 360,
+  "fps_source": null,
+  "image_path": "data/orig/cam01/000002.jpg",
+  "sha256": "39e06fb3884a94756e7201358737ccff4df35805b314cd846174778456649682",
+  "enhancement": {
+    "model": "demo_sintetico",
+    "scale": 4,
+    "enhanced_path": "data/enh/cam01/000002.png",
+    "width": 2560,
+    "height": 1440,
+    "processing_ms": null,
+    "skipped_reason": null,
+    "is_evidence": false
+  },
+  "analysis": {
+    "detector": "demo_sintetico",
+    "ocr": "demo_sintetico",
+    "detect_ms": null,
+    "ocr_ms": null,
+    "detections": [
+      {
+        "detection_id": "cam01_000002_d1",
+        "class": "vehicle",
+        "bbox_xyxy": [
+          330.0,
+          120.0,
+          520.0,
+          240.0
+        ],
+        "confidence": 0.9,
+        "track_id": null,
+        "plate": {
+          "bbox_xyxy": [
+            385.0,
+            205.0,
+            455.0,
+            230.0
+          ],
+          "text_original": "XYZ9876",
+          "confidence_original": 0.55,
+          "text_enhanced": "XYZ9876",
+          "confidence_enhanced": 0.88,
+          "readable_improved": false
+        }
+      }
+    ]
+  }
+}

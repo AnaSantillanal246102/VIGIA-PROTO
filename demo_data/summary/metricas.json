@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "total_frames": 2,
+  "plates_detected": 2,
+  "plates_read_original": 1,
+  "plates_read_enhanced": 2,
+  "avg_confidence_original": 0.55,
+  "avg_confidence_enhanced": 0.83,
+  "avg_latency_ms_per_frame": null,
+  "per_camera": [
+    {
+      "camera_id": "cam_01",
+      "usable_without_replacement": null,
+      "note": "dato sintetico de demostracion"
+    }
+  ]
+}

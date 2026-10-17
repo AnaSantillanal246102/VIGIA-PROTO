@@ -1,0 +1,19 @@
+# secretos
+.env
+*.key
+*.pem
+id_*
+# datos pesados (data/ vive en cada maquina; demo_data/ si se versiona)
+data/*
+!data/.gitkeep
+*.mp4
+*.avi
+*.mov
+# modelos (guardarlos en Drive)
+*.pt
+*.onnx
+# python / notebooks
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/

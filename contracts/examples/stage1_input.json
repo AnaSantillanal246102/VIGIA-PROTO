@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "frame_id": "cam01_20261016T143210Z_000123",
+  "camera_id": "cam_01",
+  "source": { "type": "api", "name": "fuente_ejemplo" },
+  "timestamp_utc": "2026-10-16T14:32:10Z",
+  "frame_index": 123,
+  "width": 640,
+  "height": 360,
+  "fps_source": 5,
+  "image_path": "data/orig/cam01/000123.jpg",
+  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

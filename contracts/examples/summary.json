@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "total_frames": 200,
+  "plates_detected": 64,
+  "plates_read_original": 11,
+  "plates_read_enhanced": 38,
+  "avg_confidence_original": 0.42,
+  "avg_confidence_enhanced": 0.71,
+  "avg_latency_ms_per_frame": 505,
+  "per_camera": [
+    { "camera_id": "cam_01", "usable_without_replacement": true, "note": "ejemplo" },
+    { "camera_id": "cam_02", "usable_without_replacement": false, "note": "ejemplo: distancia excesiva" }
+  ]
+}
