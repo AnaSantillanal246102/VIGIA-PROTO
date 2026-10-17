@@ -1,0 +1,28 @@
+Fotos analizadas: 50
+Fotos con al menos una detección: 35
+Detecciones totales: 63
+Confianza >= 0.5: 40
+Forma de placa (proporción 2 a 6): 62
+Con texto leído (original): 16
+Con texto leído (mejorado): 24
+La mejora ayudó en: 19
+Tiempo mejora (promedio ms): 21.2
+Tiempo detección (promedio ms): 28.2
+Tiempo lectura (promedio ms): 236.9
+
+Primeras 15 detecciones:
+{'foto': '000000.json', 'confianza': 0.6311, 'ancho': 72, 'alto': 23, 'proporcion': 3.1, 'texto_original': '04MPL725', 'texto_mejorado': '24MPL725', 'mejoro': False}
+{'foto': '000005.json', 'confianza': 0.649, 'ancho': 81, 'alto': 33, 'proporcion': 2.44, 'texto_original': None, 'texto_mejorado': '54MPL725', 'mejoro': True}
+{'foto': '000010.json', 'confianza': 0.4712, 'ancho': 78, 'alto': 27, 'proporcion': 2.89, 'texto_original': '04MPL225', 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000025.json', 'confianza': 0.5364, 'ancho': 90, 'alto': 33, 'proporcion': 2.71, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000030.json', 'confianza': 0.5268, 'ancho': 89, 'alto': 34, 'proporcion': 2.6, 'texto_original': None, 'texto_mejorado': '54WM08', 'mejoro': True}
+{'foto': '000035.json', 'confianza': 0.5401, 'ancho': 84, 'alto': 38, 'proporcion': 2.24, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000035.json', 'confianza': 0.2827, 'ancho': 62, 'alto': 28, 'proporcion': 2.23, 'texto_original': '3UL9228', 'texto_mejorado': 'J4UL9228', 'mejoro': False}
+{'foto': '000040.json', 'confianza': 0.3626, 'ancho': 106, 'alto': 36, 'proporcion': 2.94, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000110.json', 'confianza': 0.3949, 'ancho': 66, 'alto': 32, 'proporcion': 2.06, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000110.json', 'confianza': 0.278, 'ancho': 47, 'alto': 16, 'proporcion': 2.88, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000115.json', 'confianza': 0.4481, 'ancho': 53, 'alto': 24, 'proporcion': 2.25, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000120.json', 'confianza': 0.3558, 'ancho': 72, 'alto': 29, 'proporcion': 2.49, 'texto_original': None, 'texto_mejorado': '34449328', 'mejoro': True}
+{'foto': '000120.json', 'confianza': 0.3494, 'ancho': 53, 'alto': 25, 'proporcion': 2.14, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
+{'foto': '000125.json', 'confianza': 0.4681, 'ancho': 62, 'alto': 21, 'proporcion': 2.93, 'texto_original': None, 'texto_mejorado': '1UL9328', 'mejoro': True}
+{'foto': '000125.json', 'confianza': 0.3872, 'ancho': 61, 'alto': 27, 'proporcion': 2.27, 'texto_original': None, 'texto_mejorado': None, 'mejoro': False}
