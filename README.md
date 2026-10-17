@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # VIGIA — Mejoramiento inteligente de video para videovigilancia urbana (prototipo)
 
 ```
@@ -44,3 +45,5 @@ python contracts/validate.py 3 data/json                                        
 - Las cajas `bbox_xyxy` van **en píxeles de la imagen original**.
 - Imagen mejorada = apoyo, nunca evidencia.
 - Las imágenes Docker se construyen **en el servidor** (s390x), nunca en una laptop.
+=======
+>>>>>>> 241b5abf1421c1903f3ce66e558bdfda24fba497
