@@ -1,0 +1,10 @@
+[
+  {
+    "camera_id": "caltrans",
+    "type": "caltrans",
+    "district": 7,
+    "limit": 20,
+    "license": "Caltrans CWWP2: leer Conditions of Use",
+    "scene": "dia-lejos"
+  }
+]
