@@ -14,10 +14,22 @@
   .tile b{font-size:1.6rem;display:block}
   .card{background:#fff;border-radius:8px;padding:12px;margin-bottom:14px;box-shadow:0 1px 3px #0002}
   .imgs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .imgs figure{margin:0}.imgs img{width:100%;border-radius:4px;background:#ddd}
+  .imgs figure{margin:0}
+  .marco{position:relative;line-height:0}
+  .marco img{width:100%;border-radius:4px;background:#ddd}
+  .marco svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
   figcaption{font-size:.8rem;color:#555;margin-top:2px}
   .ok{color:#0a7a2f;font-weight:600}.no{color:#a33}
   .warn{background:#fff6d6;border-left:4px solid #e0a800;padding:8px 12px;margin-bottom:14px;font-size:.9rem}
+  .placas{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:10px 0}
+  .placa{border:1px solid #e3e5e8;border-radius:6px;padding:8px;font-size:.85rem}
+  .placa.revisar{border-color:#e0a800;background:#fffbea}
+  .zoom{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}
+  .zoom canvas{width:100%;border-radius:3px;background:#eee;image-rendering:pixelated}
+  .zoom span{display:block;font-size:.7rem;color:#555}
+  .etq{display:inline-block;font-size:.72rem;font-weight:600;padding:1px 6px;border-radius:10px;margin-left:4px}
+  .etq.rev{background:#ffe08a;color:#6b4e00}
+  .nota{font-size:.8rem;color:#666}
   @media (max-width:700px){.imgs{grid-template-columns:1fr}}
 </style>
 </head>
@@ -26,16 +38,68 @@
   <small>Prototipo. Resultados de demostracion.</small></header>
 <main>
   <div class="warn">Las imagenes mejoradas son un <b>apoyo al analisis, no evidencia</b>.
-    La evidencia es siempre el video original.</div>
+    La evidencia es siempre el video original. Los recuadros se dibujan encima; las imagenes no se modifican.</div>
   <div class="tiles" id="tiles"></div>
   <div id="frames">Cargando...</div>
 </main>
 <script>
+const CONF_REVISION = 0.5;   // lecturas por debajo de esta confianza se marcan para revision humana
+const SVG = "http://www.w3.org/2000/svg";
 const el = (tag, props = {}, ...kids) => {
   const n = Object.assign(document.createElement(tag), props);
   kids.forEach(k => n.append(k)); return n;
 };
 const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "-";
+const listo = img => img.complete && img.naturalWidth ? Promise.resolve() :
+  new Promise(r => { img.addEventListener("load", r, {once: true}); img.addEventListener("error", r, {once: true}); });
+
+function texto(p) {
+  const t = p.text_enhanced || p.text_original;
+  if (!t) return "";
+  const c = p.text_enhanced ? p.confidence_enhanced : p.confidence_original;
+  return c != null ? `${t} · ${Number(c).toFixed(2)}` : t;
+}
+
+// Dibuja los recuadros sobre la imagen usando las coordenadas de la imagen ORIGINAL.
+// Funciona igual para la mejorada porque tiene la misma proporcion.
+function recuadros(marco, img, dets, ancho, alto) {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", `0 0 ${ancho} ${alto}`);
+  svg.setAttribute("preserveAspectRatio", "none");
+  const grosor = Math.max(2, ancho / 400), letra = Math.max(14, ancho / 55);
+  dets.forEach(d => {
+    const [x1, y1, x2, y2] = d.bbox_xyxy;
+    const r = document.createElementNS(SVG, "rect");
+    Object.entries({x: x1, y: y1, width: x2 - x1, height: y2 - y1, fill: "none",
+      stroke: "#00e05a", "stroke-width": grosor}).forEach(([k, v]) => r.setAttribute(k, v));
+    svg.append(r);
+    const t = texto(d.plate || {});
+    if (t) {
+      const fondo = document.createElementNS(SVG, "rect");
+      const w = t.length * letra * 0.62 + 8;
+      Object.entries({x: x1, y: Math.max(0, y1 - letra - 6), width: w, height: letra + 6, fill: "#00e05a"})
+        .forEach(([k, v]) => fondo.setAttribute(k, v));
+      const tx = document.createElementNS(SVG, "text");
+      Object.entries({x: x1 + 4, y: Math.max(letra, y1 - 6), "font-size": letra, "font-family": "monospace",
+        "font-weight": "bold", fill: "#000"}).forEach(([k, v]) => tx.setAttribute(k, v));
+      tx.textContent = t;
+      svg.append(fondo, tx);
+    }
+  });
+  marco.append(svg);
+}
+
+// Recorte ampliado de la placa (no modifica la imagen original)
+function recorte(img, caja, escala) {
+  const [x1, y1, x2, y2] = caja.map(v => v * escala);
+  const margen = (x2 - x1) * 0.15;
+  const sx = Math.max(0, x1 - margen), sy = Math.max(0, y1 - margen);
+  const sw = Math.min(img.naturalWidth - sx, x2 - x1 + 2 * margen);
+  const sh = Math.min(img.naturalHeight - sy, y2 - y1 + 2 * margen);
+  const c = el("canvas", {width: 240, height: Math.max(40, Math.round(240 * sh / sw))});
+  c.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return c;
+}
 
 async function main() {
   try {
@@ -51,22 +115,64 @@ async function main() {
   const box = document.getElementById("frames");
   const frames = await (await fetch("/api/frames")).json();
   box.textContent = frames.length ? "" : "Sin fotogramas procesados.";
+
   for (const f of frames) {
+    const dets = (f.analysis && f.analysis.detections) || [];
+    const imgO = el("img", {src: "/" + f.image_path, loading: "lazy"});
+    const marcoO = el("div", {className: "marco"}, imgO);
     const imgs = el("div", {className: "imgs"},
-      el("figure", {}, el("img", {src: "/" + f.image_path, loading: "lazy"}), el("figcaption", {textContent: "Original"})));
-    if (f.enhancement.enhanced_path)
-      imgs.append(el("figure", {}, el("img", {src: "/" + f.enhancement.enhanced_path, loading: "lazy"}),
+      el("figure", {}, marcoO, el("figcaption", {textContent: `Original (evidencia) - ${dets.length} placa(s) detectada(s)`})));
+
+    let imgM = null, marcoM = null;
+    if (f.enhancement && f.enhancement.enhanced_path) {
+      imgM = el("img", {src: "/" + f.enhancement.enhanced_path, loading: "lazy"});
+      marcoM = el("div", {className: "marco"}, imgM);
+      imgs.append(el("figure", {}, marcoM,
         el("figcaption", {textContent: `Mejorada (${f.enhancement.model}) - apoyo, no evidencia`})));
+    }
+
     const card = el("div", {className: "card"},
       el("b", {textContent: `${f.camera_id} - ${f.timestamp_utc}`}), imgs);
-    for (const d of f.analysis.detections) {
-      const p = d.plate || {};
-      card.append(el("p", {},
-        `Placa original: ${p.text_original ?? "no legible"} (${p.confidence_original ?? 0}) | mejorada: ${p.text_enhanced ?? "no legible"} (${p.confidence_enhanced ?? 0}) `,
-        el("span", {className: p.readable_improved ? "ok" : "no", textContent: p.readable_improved ? "mejoro" : "sin mejora"})));
-    }
-    card.append(el("small", {textContent: `frame_id: ${f.frame_id} | sha256: ${f.sha256.slice(0, 12)}...`}));
+
+    // Solo se listan las placas con alguna lectura; las demas se cuentan
+    const leidas = dets.filter(d => d.plate && (d.plate.text_original || d.plate.text_enhanced));
+    const lista = el("div", {className: "placas"});
+    card.append(lista);
+    if (dets.length > leidas.length)
+      card.append(el("p", {className: "nota",
+        textContent: `${dets.length - leidas.length} placa(s) detectada(s) sin lectura legible (muy pequenas o borrosas).`}));
+    card.append(el("small", {textContent: `frame_id: ${f.frame_id} | sha256: ${(f.sha256 || "").slice(0, 12)}...`}));
     box.append(card);
+
+    // Cuando cargan las imagenes: recuadros y acercamientos
+    (async () => {
+      imgO.loading = "eager";
+      await listo(imgO);
+      const W = imgO.naturalWidth, H = imgO.naturalHeight;
+      if (!W) return;
+      recuadros(marcoO, imgO, dets, W, H);
+      let escalaM = 1;
+      if (imgM) {
+        imgM.loading = "eager";
+        await listo(imgM);
+        if (imgM.naturalWidth) { recuadros(marcoM, imgM, dets, W, H); escalaM = imgM.naturalWidth / W; }
+      }
+      for (const d of leidas) {
+        const p = d.plate;
+        const conf = Math.max(p.confidence_original ?? 0, p.confidence_enhanced ?? 0);
+        const revisar = conf < CONF_REVISION;
+        const zoom = el("div", {className: "zoom"},
+          el("div", {}, recorte(imgO, d.bbox_xyxy, 1), el("span", {textContent: "Original"})));
+        if (imgM && imgM.naturalWidth)
+          zoom.append(el("div", {}, recorte(imgM, d.bbox_xyxy, escalaM), el("span", {textContent: "Mejorada"})));
+        const ficha = el("div", {className: "placa" + (revisar ? " revisar" : "")}, zoom,
+          el("div", {}, `Original: ${p.text_original ?? "no legible"} (${p.confidence_original ?? 0})`),
+          el("div", {}, `Mejorada: ${p.text_enhanced ?? "no legible"} (${p.confidence_enhanced ?? 0}) `,
+            el("span", {className: p.readable_improved ? "ok" : "no", textContent: p.readable_improved ? "mejoro" : "sin mejora"})));
+        if (revisar) ficha.append(el("span", {className: "etq rev", textContent: "Revision humana"}));
+        lista.append(ficha);
+      }
+    })();
   }
 }
 main();

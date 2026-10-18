@@ -51,7 +51,7 @@ class PlateModels:
 
     def __init__(self, weights: str = "runs/detect/placas/weights/best.pt",
                  device: Optional[str] = None, conf: float = 0.25,
-                 imgsz: int = 640, imgsz_enhanced: int = 1280,
+                 imgsz: int = 1920, imgsz_enhanced: int = 1280,
                  ocr_langs: Tuple[str, ...] = ("en",)):
         from ultralytics import YOLO   # imports pesados aqui, no al importar el modulo
         import easyocr
