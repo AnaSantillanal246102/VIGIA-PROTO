@@ -11,7 +11,7 @@ Cada etapa copia todo lo anterior y agrega su bloque. Formato exacto en `contrac
 | Carpeta | Qué contiene | Equipo | Rama |
 |---|---|---|---|
 | `contracts/` | Esquemas Pydantic + validador + ejemplos (**compartido, no editar sin avisar**) | Todos | `main` |
-| `pipeline/` | `ingest.py`: video/imágenes/stream → JPG + JSON etapa 1 | Team 1 | `p1-pipeline` |
+| `pipeline/` | `live.py` (camaras en vivo), `sources.py`, `selector.py`, `discover.py`, `ingest.py` (archivos) → JPG + JSON etapa 1 | Team 1 | `p1-pipeline` |
 | `modules/enhancement.py` | Mejora de resolución (línea base bicúbica; aquí se enchufa Real-ESRGAN) | Team 2 | `p2-mejora` |
 | `modules/plates.py` | YOLO de placas + OCR → JSON etapa 3 | Team 3 | `p3-placas` |
 | `panel/` | Interfaz web estática (original vs. mejorado, placas, métricas) | Team 1 | `p1-panel` |
@@ -24,22 +24,34 @@ Cada etapa copia todo lo anterior y agrega su bloque. Formato exacto en `contrac
 
 ## Probar el panel (cualquier máquina con Docker)
 ```bash
-cp .env.example .env                  # cambia POSTGRES_PASSWORD
-./deploy/crear_usuario.sh operador1   # usuario del login; pide la contraseña dos veces
+cp .env.example .env        # cambia POSTGRES_PASSWORD
 docker compose up -d --build
-# abrir http://localhost  (con WEB_PORT=80) y entrar con ese usuario
+# abrir http://localhost  (con WEB_PORT=80)
 ```
 Por defecto muestra `demo_data/` (sintético). Para ver resultados reales: `HOST_DATA_DIR=./data` en `.env`.
 
-El login (nginx, `auth_basic`) protege todo: el panel, `/data/` y `/api/`. Los usuarios viven en
-`deploy/panel.htpasswd`, que no se sube a git. Para cambiar una contraseña se vuelve a correr
-`crear_usuario.sh` con el mismo usuario y luego `docker compose up -d --force-recreate --no-deps web`.
-Si `docker compose up` corrió antes de crear el archivo, Docker deja una carpeta con ese nombre:
-bórrala con `sudo rmdir deploy/panel.htpasswd` y crea el usuario.
+## Entrada de video en vivo (camaras publicas, HLS, RTSP)
+```bash
+pip install -r requirements.txt
+python -m pipeline.discover --limit 10 --verify          # arma config/sources.local.json con camaras publicas
+python -m pipeline.live --config config/sources.local.json --duration 300 --enhance bicubic
+# en Colab/GPU, ademas con placas:  pip install -r requirements-gpu.txt
+python -m pipeline.live --config config/sources.local.json --duration 300 --enhance bicubic --plates best.pt
+```
+Sin `--enhance/--plates` solo captura (sirve en el servidor LinuxONE). Detalle de fuentes y limites: `docs/fuentes_video.md`.
 
-El panel muestra una placa a la vez: el recorte del original y el de la imagen mejorada lado a lado,
-con los píxeles reales visibles, la lectura de cada uno, dónde está la placa en el fotograma y el
-resumen de la corrida. Las flechas del teclado pasan de una placa a otra.
+## Enviar resultados al panel desde Colab (GPU) -> servidor
+1. En el servidor: `INGEST_TOKEN` en `.env` (`openssl rand -hex 24`), `HOST_DATA_DIR=./data`, `docker compose up -d --build`.
+2. En Colab: `os.environ["VIGIA_TOKEN"] = userdata.get("VIGIA_TOKEN")` (Secretos de Colab) y:
+```python
+from modules.plates import PlateModels
+from modules.publish import procesar_imagen
+models = PlateModels("/content/drive/MyDrive/vigia/best.pt")
+frame, vista = procesar_imagen("foto.jpg", models, root=".", camera=1, enhance="bicubic",
+                               push_url="http://IP_DEL_SERVIDOR:PUERTO")
+```
+`vista` trae los rectangulos verdes (solo para mirar; el original no se toca). En vivo: `python -m pipeline.live ... --plates best.pt --push http://IP:PUERTO`.
+La API valida contrato, sha256 del original y rutas antes de guardar. Sobre HTTP la clave viaja sin cifrar (prototipo).
 
 ## Correr los módulos (desde la raíz del repo; `pip install -r contracts/requirements.txt opencv-python-headless`)
 ```bash

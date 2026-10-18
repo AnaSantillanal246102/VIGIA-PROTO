@@ -1,0 +1,8 @@
+.git
+data
+demo_data
+notebooks
+docs
+*.pt
+__pycache__
+*.zip

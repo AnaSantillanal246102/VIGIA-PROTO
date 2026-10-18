@@ -1,0 +1,34 @@
+{
+  "_comentario": "Copia a config/sources.json. 'camera' es el numero (1 -> cam01) y no se repite. Claves de API: usa ${VARIABLE} en url o headers, nunca el valor.",
+  "sources": [
+    {
+      "enabled": true,
+      "camera": 1,
+      "name": "ensayo_local",
+      "type": "file",
+      "url": "clips/prueba.mp4",
+      "interval_s": 1.0,
+      "speed": 1.0,
+      "loop": true,
+      "min_sharpness": 10,
+      "min_change": 1.5
+    },
+    {
+      "enabled": false,
+      "camera": 2,
+      "name": "camara_snapshot_ejemplo",
+      "type": "snapshot",
+      "url": "https://EJEMPLO.gob/camara/123.jpg",
+      "interval_s": 10,
+      "headers": { "x-api-key": "${MI_API_KEY}" }
+    },
+    {
+      "enabled": false,
+      "camera": 3,
+      "name": "camara_hls_ejemplo",
+      "type": "hls",
+      "url": "https://EJEMPLO.gob/stream/123/index.m3u8",
+      "interval_s": 5
+    }
+  ]
+}

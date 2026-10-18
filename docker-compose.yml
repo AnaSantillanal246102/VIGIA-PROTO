@@ -11,11 +11,14 @@ services:
     restart: unless-stopped            # sin "ports": la BD no se expone fuera de Docker
 
   api:
-    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     environment:
       DATA_DIR: /data
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
     volumes:
-      - ${HOST_DATA_DIR:-./demo_data}:/data:ro
+      - ${HOST_DATA_DIR:-./demo_data}:/data      # lectura y escritura: la API recibe resultados
     depends_on: [db]
     restart: unless-stopped
 
@@ -26,7 +29,6 @@ services:
     volumes:
       - ./panel:/usr/share/nginx/html:ro
       - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./deploy/panel.htpasswd:/etc/nginx/panel.htpasswd:ro   # usuarios del login (no va a git)
       - ${HOST_DATA_DIR:-./demo_data}:/usr/share/nginx/data:ro
     depends_on: [api]
     restart: unless-stopped

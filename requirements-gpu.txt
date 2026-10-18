@@ -1,0 +1,4 @@
+# Solo para el nodo con GPU (Colab). No instalar en LinuxONE.
+-r requirements.txt
+ultralytics
+easyocr

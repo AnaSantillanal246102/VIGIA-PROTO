@@ -3,8 +3,6 @@
 *.key
 *.pem
 id_*
-# usuarios del login de nginx (cada maquina crea el suyo con deploy/crear_usuario.sh)
-deploy/panel.htpasswd*
 # datos pesados (data/ vive en cada maquina; demo_data/ si se versiona)
 data/*
 !data/.gitkeep
@@ -19,3 +17,5 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .venv/
+
+config/sources.local.json

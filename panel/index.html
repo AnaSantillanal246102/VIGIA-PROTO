@@ -3,517 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VIGIA · Panel</title>
+<title>VIGIA - Panel de resultados</title>
 <style>
-  :root {
-    color-scheme: light;
-    --pv-fondo: #f8fafc;
-    --pv-tarjeta: #ffffff;
-    --pv-borde: #e2e8f0;
-    --pv-texto: #0f172a;
-    --pv-texto-2: #64748b;
-    --pv-titulo: #334155;
-    --pv-alta: #15803d;   --pv-alta-bg: #dcfce7;
-    --pv-media: #b45309;  --pv-media-bg: #fef3c7;
-    --pv-baja: #b91c1c;   --pv-baja-bg: #fee2e2;
-    --pv-nd: #94a3b8;     --pv-nd-bg: #f1f5f9;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--pv-fondo);
-    color: var(--pv-texto);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  [hidden] { display: none !important; }
-
-  .pv-panel { max-width: 1200px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-  .pv-card { background: var(--pv-tarjeta); border: 1px solid var(--pv-borde); border-radius: 16px; padding: 20px 24px; min-width: 0; }
-  .pv-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-  .pv-titulo { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pv-titulo); }
-  .pv-meta { margin: 0; font-size: 13px; color: var(--pv-texto-2); overflow-wrap: anywhere; }
-  .pv-meta + .pv-meta { margin-top: 4px; }
-
-  /* Recortes: mismo ancho en pantalla, los píxeles reales se ven como cuadros */
-  .pv-recortes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .pv-figura { margin: 0; min-width: 0; }
-  .pv-lienzo {
-    display: block;
-    width: 100%;
-    height: auto;
-    background: var(--pv-nd-bg);
-    border: 1px solid var(--pv-borde);
-    border-radius: 8px;
-  }
-  .pv-pixel { image-rendering: crisp-edges; image-rendering: pixelated; }
-  .pv-img-vacia {
-    min-height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px;
-    text-align: center;
-    color: var(--pv-texto-2);
-    font-size: 13px;
-  }
-  .pv-pie { margin-top: 8px; font-size: 13px; color: var(--pv-texto-2); overflow-wrap: anywhere; }
-  .pv-nota {
-    margin: 16px 0 0;
-    padding: 10px 14px;
-    border-radius: 10px;
-    background: var(--pv-media-bg);
-    color: #78350f;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .pv-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-  /* Badges */
-  .pv-badge { padding: 4px 12px; border-radius: 999px; font-size: 13px; border: 1px solid; white-space: nowrap; }
-  .pv-badge-alta { color: var(--pv-alta); background: var(--pv-alta-bg); border-color: var(--pv-alta); }
-  .pv-badge-media { color: var(--pv-media); background: var(--pv-media-bg); border-color: var(--pv-media); }
-  .pv-badge-nd { color: var(--pv-texto-2); background: var(--pv-nd-bg); border-color: var(--pv-nd); }
-
-  /* Lectura por carácter: el color es la confianza de la placa completa */
-  .pv-lectura + .pv-lectura { margin-top: 12px; }
-  .pv-lectura-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: var(--pv-texto-2); }
-  .pv-etiqueta { font-weight: 600; color: var(--pv-titulo); }
-  .pv-placa { display: flex; flex-wrap: wrap; gap: clamp(4px, 1.2vw, 8px); margin: 6px 0 4px; }
-  .pv-char {
-    width: clamp(28px, 8vw, 52px);
-    aspect-ratio: 52 / 64;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: ui-monospace, "DejaVu Sans Mono", "Liberation Mono", monospace;
-    font-size: clamp(20px, 5.5vw, 36px);
-    font-weight: 700;
-    color: var(--pv-texto);
-    border: 2px solid;
-    border-radius: 8px;
-  }
-  .pv-conf-alta  { border-color: var(--pv-alta);  background: var(--pv-alta-bg); }
-  .pv-conf-media { border-color: var(--pv-media); background: var(--pv-media-bg); }
-  .pv-conf-baja  { border-color: var(--pv-baja);  background: var(--pv-baja-bg); }
-  .pv-conf-nd    { border-color: var(--pv-nd);    background: var(--pv-nd-bg); }
-  .pv-nolegible { margin: 6px 0 4px; font-size: 15px; color: var(--pv-texto); }
-  .pv-separador { border: 0; border-top: 1px solid var(--pv-borde); margin: 16px 0 12px; }
-
-  /* Botones */
-  .pv-botones { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-  .pv-btn {
-    height: 44px;
-    padding: 0 24px;
-    border-radius: 12px;
-    font: inherit;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    background: #ffffff;
-    color: var(--pv-texto);
-    border: 1px solid var(--pv-borde);
-  }
-  .pv-btn-primario { background: var(--pv-texto); color: #ffffff; border-color: var(--pv-texto); }
-  .pv-btn:disabled { opacity: 0.45; cursor: default; }
-  .pv-btn:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
-  .pv-sesion { margin-left: auto; font-size: 13px; color: var(--pv-texto-2); }
-  .pv-aviso { margin: 0; font-size: 14px; color: var(--pv-baja); }
-
-  /* Resumen de la corrida */
-  .pv-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-  .pv-tile { border: 1px solid var(--pv-borde); border-radius: 12px; padding: 12px 16px; }
-  .pv-tile-valor { display: block; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .pv-tile-nombre { font-size: 13px; color: var(--pv-texto-2); }
-  .pv-camaras { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-  .pv-camara { display: flex; align-items: baseline; gap: 10px; font-size: 14px; flex-wrap: wrap; }
-  .pv-punto { width: 10px; height: 10px; border-radius: 50%; flex: none; align-self: center; }
-  .pv-punto-alta { background: var(--pv-alta); }
-  .pv-punto-baja { background: var(--pv-baja); }
-  .pv-punto-nd { background: var(--pv-nd); }
-
-  @media (max-width: 720px) {
-    .pv-panel { padding: 16px; }
-    .pv-card { padding: 16px; }
-    .pv-recortes, .pv-fila { grid-template-columns: 1fr; }
-    .pv-sesion { margin-left: 0; width: 100%; }
-  }
+  body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f7;color:#1c1e21}
+  header{background:#12304a;color:#fff;padding:14px 20px}
+  header small{display:block;opacity:.8;margin-top:4px}
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .tiles{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .tile{background:#fff;border-radius:8px;padding:12px 16px;min-width:150px;box-shadow:0 1px 3px #0002}
+  .tile b{font-size:1.6rem;display:block}
+  .card{background:#fff;border-radius:8px;padding:12px;margin-bottom:14px;box-shadow:0 1px 3px #0002}
+  .imgs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .imgs figure{margin:0}.imgs img{width:100%;border-radius:4px;background:#ddd}
+  figcaption{font-size:.8rem;color:#555;margin-top:2px}
+  .ok{color:#0a7a2f;font-weight:600}.no{color:#a33}
+  .warn{background:#fff6d6;border-left:4px solid #e0a800;padding:8px 12px;margin-bottom:14px;font-size:.9rem}
+  @media (max-width:700px){.imgs{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<main class="pv-panel">
-  <section class="pv-card" id="vacio" hidden>
-    <h2 class="pv-titulo">Sin placas procesadas</h2>
-    <p class="pv-meta" style="margin-top:8px">Cuando el módulo de placas escriba resultados nuevos aparecerán aquí. Se revisa cada 15 segundos.</p>
-  </section>
-
-  <section class="pv-card" id="tarjeta-recortes" hidden>
-    <div class="pv-cabecera">
-      <h2 class="pv-titulo">Comparativa del recorte</h2>
-      <span class="pv-meta" id="posicion"></span>
-    </div>
-    <div class="pv-recortes">
-      <figure class="pv-figura">
-        <div id="img-original"></div>
-        <figcaption class="pv-pie" id="pie-original"></figcaption>
-      </figure>
-      <figure class="pv-figura">
-        <div id="img-mejorada"></div>
-        <figcaption class="pv-pie" id="pie-mejorada"></figcaption>
-      </figure>
-    </div>
-    <p class="pv-nota">La imagen mejorada es un <b>apoyo para el análisis, no evidencia</b>. La evidencia es siempre el video original.</p>
-  </section>
-
-  <div class="pv-fila" id="fila-detalle" hidden>
-    <section class="pv-card">
-      <div class="pv-cabecera">
-        <h2 class="pv-titulo">Lectura de la placa</h2>
-        <span id="badge" class="pv-badge"></span>
-      </div>
-      <div id="lecturas"></div>
-      <hr class="pv-separador">
-      <p class="pv-meta" id="meta-lugar"></p>
-      <p class="pv-meta" id="meta-modelos"></p>
-    </section>
-    <section class="pv-card">
-      <div class="pv-cabecera"><h2 class="pv-titulo">Ubicación en el fotograma</h2></div>
-      <figure class="pv-figura">
-        <div id="img-fotograma"></div>
-        <figcaption class="pv-pie" id="pie-fotograma"></figcaption>
-      </figure>
-    </section>
-  </div>
-
-  <div class="pv-botones">
-    <button id="anterior" class="pv-btn" hidden>← Anterior</button>
-    <button id="siguiente" class="pv-btn pv-btn-primario" hidden>Siguiente →</button>
-    <span id="sesion" class="pv-sesion"></span>
-  </div>
-  <div id="aviso"></div>
-
-  <section class="pv-card">
-    <div class="pv-cabecera"><h2 class="pv-titulo">Resumen de la corrida</h2></div>
-    <div class="pv-tiles" id="tiles"></div>
-    <ul class="pv-camaras" id="camaras"></ul>
-  </section>
+<header>VIGIA - Mejoramiento inteligente de video para videovigilancia urbana
+  <small>Prototipo. Resultados de demostracion.</small></header>
+<main>
+  <div class="warn">Las imagenes mejoradas son un <b>apoyo al analisis, no evidencia</b>.
+    La evidencia es siempre el video original.</div>
+  <div class="tiles" id="tiles"></div>
+  <div id="frames">Cargando...</div>
 </main>
-
 <script>
-"use strict";
-// Lee /api/frames (etapa 3) y /api/summary. Todo texto que viene de los JSON se pone
-// con textContent, nunca como HTML. Las cajas bbox_xyxy vienen en píxeles del original.
-
-const REFRESCO_MS = 15000;
-const CONF_ALTA = 0.80;    // provisionales: mismos umbrales que el panel del notebook
-const CONF_MEDIA = 0.50;
-const MAX_IMAGENES = 12;   // imágenes decodificadas que se guardan para navegar rápido
-
-const $ = (id) => document.getElementById(id);
-const el = (tag, props = {}, ...hijos) => {
+const el = (tag, props = {}, ...kids) => {
   const n = Object.assign(document.createElement(tag), props);
-  n.append(...hijos);
-  return n;
+  kids.forEach(k => n.append(k)); return n;
 };
+const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "-";
 
-let placas = [];          // una entrada por detección con placa
-let indice = 0;
-let ultimoFrames = null;  // texto de la última respuesta, para no repintar si no cambió
-let turno = 0;            // evita que una imagen lenta pinte sobre otra placa
-const imagenes = new Map();
-
-// ---------- utilidades ----------
-const url = (ruta) => "/" + encodeURI(String(ruta).replace(/^\/+/, ""));
-const pct = (x) => `${Math.round(100 * x)}\u202f%`;   // espacio fino que no se parte
-const proporcion = (a, b) => (b ? ` (${Math.round((100 * a) / b)}\u202f%)` : "");
-
-function claseConf(conf, texto) {
-  if (texto == null || conf == null) return "nd";
-  if (conf >= CONF_ALTA) return "alta";
-  if (conf >= CONF_MEDIA) return "media";
-  return "baja";
-}
-
-function fechaUtc(ts) {
-  return typeof ts === "string" && ts.includes("T") ? ts.replace("T", " ").replace(/Z$/, " UTC") : String(ts ?? "");
-}
-
-function mostrarAviso(texto) {
-  $("aviso").replaceChildren(texto ? el("p", { className: "pv-aviso", textContent: texto }) : "");
-}
-
-function cargarImagen(direccion) {
-  if (imagenes.has(direccion)) {
-    const p = imagenes.get(direccion);
-    imagenes.delete(direccion);
-    imagenes.set(direccion, p);           // la más reciente al final
-    return p;
-  }
-  const p = new Promise((ok, mal) => {
-    const img = new Image();
-    img.onload = () => ok(img);
-    img.onerror = () => {
-      imagenes.delete(direccion);
-      mal(new Error("no se encontró la imagen"));
-    };
-    img.src = direccion;
-  });
-  imagenes.set(direccion, p);
-  while (imagenes.size > MAX_IMAGENES) imagenes.delete(imagenes.keys().next().value);
-  return p;
-}
-
-const cajaVacia = (texto) => el("div", { className: "pv-lienzo pv-img-vacia", textContent: texto });
-
-// Pone en `contenedor` un canvas dibujado con la imagen; si no carga, un aviso.
-async function ponerImagen(contenedor, ruta, dibujar, faltante, miTurno) {
-  if (!ruta) {
-    contenedor.replaceChildren(cajaVacia(faltante));
-    return;
-  }
-  contenedor.replaceChildren(cajaVacia("Cargando…"));
+async function main() {
   try {
-    const img = await cargarImagen(url(ruta));
-    if (miTurno !== turno) return;
-    const lienzo = el("canvas");
-    dibujar(lienzo, img);
-    contenedor.replaceChildren(lienzo);
-  } catch (error) {
-    if (miTurno === turno) contenedor.replaceChildren(cajaVacia(`No se encontró la imagen: ${ruta}`));
+    const s = await (await fetch("/api/summary")).json();
+    const t = document.getElementById("tiles");
+    [["Fotogramas", s.total_frames],
+     ["Placas detectadas", s.plates_detected],
+     ["Leidas en original", `${s.plates_read_original} (${pct(s.plates_read_original, s.plates_detected)})`],
+     ["Leidas en mejorada", `${s.plates_read_enhanced} (${pct(s.plates_read_enhanced, s.plates_detected)})`],
+    ].forEach(([k, v]) => t.append(el("div", {className: "tile"}, el("b", {textContent: v}), k)));
+  } catch (e) { /* sin resumen todavia */ }
+
+  const box = document.getElementById("frames");
+  const frames = await (await fetch("/api/frames")).json();
+  box.textContent = frames.length ? "" : "Sin fotogramas procesados.";
+  for (const f of frames) {
+    const imgs = el("div", {className: "imgs"},
+      el("figure", {}, el("img", {src: "/" + f.image_path, loading: "lazy"}), el("figcaption", {textContent: "Original"})));
+    if (f.enhancement.enhanced_path)
+      imgs.append(el("figure", {}, el("img", {src: "/" + f.enhancement.enhanced_path, loading: "lazy"}),
+        el("figcaption", {textContent: `Mejorada (${f.enhancement.model}) - apoyo, no evidencia`})));
+    const card = el("div", {className: "card"},
+      el("b", {textContent: `${f.camera_id} - ${f.timestamp_utc}`}), imgs);
+    for (const d of f.analysis.detections) {
+      const p = d.plate || {};
+      card.append(el("p", {},
+        `Placa original: ${p.text_original ?? "no legible"} (${p.confidence_original ?? 0}) | mejorada: ${p.text_enhanced ?? "no legible"} (${p.confidence_enhanced ?? 0}) `,
+        el("span", {className: p.readable_improved ? "ok" : "no", textContent: p.readable_improved ? "mejoro" : "sin mejora"})));
+    }
+    card.append(el("small", {textContent: `frame_id: ${f.frame_id} | sha256: ${f.sha256.slice(0, 12)}...`}));
+    box.append(card);
   }
 }
-
-// Caja de la placa con margen, en píxeles del original y dentro de la imagen.
-function cajaConMargen([x1, y1, x2, y2], ancho, alto) {
-  const m = Math.max(4, Math.round(0.35 * (y2 - y1)));
-  const x = Math.max(0, Math.floor(x1 - m));
-  const y = Math.max(0, Math.floor(y1 - m));
-  return { x, y, w: Math.min(ancho, Math.ceil(x2 + m)) - x, h: Math.min(alto, Math.ceil(y2 + m)) - y };
-}
-
-// Copia la caja (en píxeles del original) desde `img`, que puede ser la mejorada (×escala).
-function recortar(lienzo, img, caja, frame) {
-  const sx = img.naturalWidth / frame.width;
-  const sy = img.naturalHeight / frame.height;
-  lienzo.width = Math.max(1, Math.round(caja.w * sx));
-  lienzo.height = Math.max(1, Math.round(caja.h * sy));
-  const ctx = lienzo.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img, caja.x * sx, caja.y * sy, caja.w * sx, caja.h * sy, 0, 0, lienzo.width, lienzo.height);
-  lienzo.className = "pv-lienzo pv-pixel";
-}
-
-function fotogramaConCajas(lienzo, img, frame, det) {
-  lienzo.width = img.naturalWidth;
-  lienzo.height = img.naturalHeight;
-  const ctx = lienzo.getContext("2d");
-  ctx.drawImage(img, 0, 0);
-  const sx = img.naturalWidth / frame.width;
-  const sy = img.naturalHeight / frame.height;
-  const grosor = Math.max(2, Math.round(img.naturalWidth / 320));
-  const rect = ([x1, y1, x2, y2]) => ctx.strokeRect(x1 * sx, y1 * sy, (x2 - x1) * sx, (y2 - y1) * sy);
-  ctx.lineWidth = grosor;
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
-  ctx.setLineDash([grosor * 3, grosor * 2]);
-  rect(det.bbox_xyxy);                       // vehículo
-  ctx.setLineDash([]);
-  ctx.lineWidth = grosor + 1;
-  ctx.strokeStyle = "#ef4444";
-  rect(det.plate.bbox_xyxy);                 // placa
-  lienzo.className = "pv-lienzo";
-}
-
-// ---------- vista de una placa ----------
-function badgeDe(p) {
-  const orig = p.text_original, mej = p.text_enhanced;
-  if (orig == null && mej == null) return ["nd", "No legible"];
-  if (p.readable_improved) return ["alta", "Legible gracias a la mejora"];
-  if (orig != null && mej != null) {
-    return orig === mej ? ["alta", "Las dos lecturas coinciden"] : ["media", "Lecturas distintas: revisar"];
-  }
-  return orig != null ? ["media", "Solo legible en el original"] : ["media", "Solo legible en la mejorada"];
-}
-
-function filaLectura(nombre, texto, conf, sinImagen) {
-  const clase = claseConf(conf, texto);
-  const cab = el("div", { className: "pv-lectura-cab" }, el("span", { className: "pv-etiqueta", textContent: nombre }));
-  if (texto != null) cab.append(el("span", { textContent: `confianza ${pct(conf)}` }));
-  let cuerpo;
-  if (sinImagen) {
-    cuerpo = el("p", { className: "pv-nolegible", textContent: sinImagen });
-  } else if (texto == null) {
-    cuerpo = el("p", { className: "pv-nolegible", textContent: "No legible: el sistema no adivina." });
-  } else {
-    cuerpo = el("div", { className: "pv-placa" },
-      ...[...texto].map((c) => el("span", { className: `pv-char pv-conf-${clase}`, textContent: c })));
-  }
-  return el("div", { className: "pv-lectura" }, cab, cuerpo);
-}
-
-function mostrarPlaca() {
-  const miTurno = ++turno;
-  const { frame, det } = placas[indice];
-  const placa = det.plate;
-  const mejora = frame.enhancement || {};
-  const [x1, y1, x2, y2] = placa.bbox_xyxy;
-
-  $("posicion").textContent = `Placa ${indice + 1} de ${placas.length}`;
-  $("anterior").disabled = indice === 0;
-  $("siguiente").disabled = indice === placas.length - 1;
-  history.replaceState(null, "", "#" + encodeURIComponent(det.detection_id));
-
-  // Recortes
-  const caja = cajaConMargen(placa.bbox_xyxy, frame.width, frame.height);
-  $("pie-original").textContent =
-    `Original · placa de ${Math.round(x2 - x1)} × ${Math.round(y2 - y1)} px reales`;
-  ponerImagen($("img-original"), frame.image_path,
-    (lienzo, img) => recortar(lienzo, img, caja, frame), "Sin imagen original", miTurno);
-
-  const escala = mejora.scale ? `×${mejora.scale} ` : "";
-  const ms = mejora.processing_ms != null ? ` · ${Math.round(mejora.processing_ms)} ms` : "";
-  $("pie-mejorada").textContent = mejora.enhanced_path
-    ? `Mejorada ${escala}(${mejora.model}) · apoyo, no evidencia${ms}`
-    : `Sin imagen mejorada: ${mejora.skipped_reason || "no se generó"}`;
-  ponerImagen($("img-mejorada"), mejora.enhanced_path,
-    (lienzo, img) => recortar(lienzo, img, caja, frame),
-    `No se mejoró este fotograma${mejora.skipped_reason ? ` (${mejora.skipped_reason})` : ""}`, miTurno);
-
-  // Lectura
-  const [tono, texto] = badgeDe(placa);
-  $("badge").className = `pv-badge pv-badge-${tono}`;
-  $("badge").textContent = texto;
-  $("lecturas").replaceChildren(
-    filaLectura("Original", placa.text_original, placa.confidence_original),
-    filaLectura("Mejorada", placa.text_enhanced, placa.confidence_enhanced,
-      mejora.enhanced_path ? null : "Sin imagen mejorada para leer."),
-  );
-  $("meta-lugar").textContent = `${frame.camera_id} · ${fechaUtc(frame.timestamp_utc)}`;
-  const analisis = frame.analysis || {};
-  $("meta-modelos").textContent =
-    `Detector: ${analisis.detector ?? "—"} · OCR: ${analisis.ocr ?? "—"} · ${det.detection_id}`;
-
-  // Fotograma completo
-  $("pie-fotograma").textContent =
-    `Original ${frame.width} × ${frame.height} · sha256 ${String(frame.sha256 || "").slice(0, 12)}… · ${frame.frame_id}`;
-  ponerImagen($("img-fotograma"), frame.image_path,
-    (lienzo, img) => fotogramaConCajas(lienzo, img, frame, det), "Sin imagen original", miTurno);
-}
-
-function pintarPlacas() {
-  const hay = placas.length > 0;
-  $("vacio").hidden = hay;
-  for (const id of ["tarjeta-recortes", "fila-detalle", "anterior", "siguiente"]) $(id).hidden = !hay;
-  if (hay) mostrarPlaca();
-}
-
-function ir(paso) {
-  const nuevo = indice + paso;
-  if (nuevo < 0 || nuevo >= placas.length) return;
-  indice = nuevo;
-  mostrarPlaca();
-}
-
-// ---------- resumen ----------
-const SEMAFORO = {
-  true: ["alta", "Sirve sin reemplazar la cámara"],
-  false: ["baja", "Conviene reemplazar la cámara"],
-  null: ["nd", "Sin evaluar"],
-};
-
-function pintarResumen(s) {
-  const tiles = $("tiles");
-  const camaras = $("camaras");
-  if (!s) {
-    tiles.replaceChildren(el("p", { className: "pv-meta", textContent: "Aún no hay resumen (summary/metricas.json)." }));
-    camaras.replaceChildren();
-    return;
-  }
-  const conf = s.avg_confidence_original != null && s.avg_confidence_enhanced != null
-    ? `${pct(s.avg_confidence_original)}\u00a0→ ${pct(s.avg_confidence_enhanced)}` : "—";
-  const datos = [
-    ["Fotogramas", s.total_frames],
-    ["Placas detectadas", s.plates_detected],
-    ["Leídas en el original", `${s.plates_read_original}${proporcion(s.plates_read_original, s.plates_detected)}`],
-    ["Leídas con la mejora", `${s.plates_read_enhanced}${proporcion(s.plates_read_enhanced, s.plates_detected)}`],
-    ["Confianza promedio", conf],
-    ["Latencia por fotograma", s.avg_latency_ms_per_frame != null ? `${Math.round(s.avg_latency_ms_per_frame)} ms` : "—"],
-  ];
-  tiles.replaceChildren(...datos.map(([nombre, valor]) => el("div", { className: "pv-tile" },
-    el("span", { className: "pv-tile-valor", textContent: String(valor ?? "—") }),
-    el("span", { className: "pv-tile-nombre", textContent: nombre }))));
-
-  camaras.replaceChildren(...(s.per_camera || []).map((c) => {
-    const [tono, texto] = SEMAFORO[String(c.usable_without_replacement ?? null)] || SEMAFORO.null;
-    const li = el("li", { className: "pv-camara" },
-      el("span", { className: `pv-punto pv-punto-${tono}` }),
-      el("b", { textContent: c.camera_id }),
-      el("span", { textContent: texto }));
-    if (c.note) li.append(el("span", { className: "pv-meta", textContent: `· ${c.note}` }));
-    return li;
-  }));
-}
-
-// ---------- datos ----------
-async function cargarFrames() {
-  const r = await fetch("/api/frames", { cache: "no-store" });
-  if (!r.ok) throw new Error(`el servidor respondió ${r.status}`);
-  const texto = await r.text();
-  if (texto === ultimoFrames) return;
-  const frames = JSON.parse(texto);
-  if (!Array.isArray(frames)) throw new Error("respuesta inesperada de /api/frames");
-  ultimoFrames = texto;
-
-  const actual = placas[indice]?.det.detection_id
-    ?? decodeURIComponent(location.hash.slice(1) || "");
-  placas = frames.flatMap((frame) =>
-    ((frame.analysis && frame.analysis.detections) || [])
-      .filter((det) => det.plate)
-      .map((det) => ({ frame, det })));
-  const i = placas.findIndex((p) => p.det.detection_id === actual);
-  indice = i >= 0 ? i : Math.min(indice, Math.max(0, placas.length - 1));
-  pintarPlacas();
-}
-
-async function cargarResumen() {
-  const r = await fetch("/api/summary", { cache: "no-store" });
-  if (r.status === 404) return pintarResumen(null);
-  if (!r.ok) throw new Error(`el resumen respondió ${r.status}`);
-  pintarResumen(await r.json());
-}
-
-async function cargarSesion() {
-  // nginx manda el usuario del login en el encabezado X-Remote-User de esta página.
-  try {
-    const r = await fetch(location.pathname, { method: "HEAD", cache: "no-store" });
-    const usuario = (r.headers.get("X-Remote-User") || "").trim();
-    if (r.ok && usuario && usuario.length <= 64) $("sesion").textContent = `Sesión: ${usuario}`;
-  } catch (error) { /* sin login delante: no se muestra */ }
-}
-
-async function refrescar() {
-  const resultados = await Promise.allSettled([cargarFrames(), cargarResumen()]);
-  const fallo = resultados.find((r) => r.status === "rejected");
-  mostrarAviso(fallo
-    ? `No se pudieron cargar los resultados: ${fallo.reason.message}. Reintento en ${REFRESCO_MS / 1000} s.`
-    : "");
-}
-
-async function ciclo() {
-  if (!document.hidden) await refrescar();
-  setTimeout(ciclo, REFRESCO_MS);
-}
-
-$("anterior").onclick = () => ir(-1);
-$("siguiente").onclick = () => ir(1);
-document.addEventListener("keydown", (e) => {
-  if (e.altKey || e.ctrlKey || e.metaKey) return;
-  if (e.key === "ArrowLeft") ir(-1);
-  if (e.key === "ArrowRight") ir(1);
-});
-document.addEventListener("visibilitychange", () => { if (!document.hidden) refrescar(); });
-
-cargarSesion();
-ciclo();
+main();
 </script>
 </body>
 </html>
